@@ -1,7 +1,4 @@
-# Velouré Patisserie — IT310 Midterm Prototype
-
-*Sweet by nature.* An e-commerce prototype for an artisanal vegan dessert patisserie in Bergen County, NJ.
-Built with an AI coding assistant as the primary development tool. **No real payments or emails are processed.**
+# Velouré Patisserie
 
 ---
 
@@ -28,7 +25,7 @@ Open **http://localhost:8080** when you see `Booting worker`.
 
 ---
 
-## 2. Architecture (20-point section)
+## 2. Architecture
 
 ```
   Your browser
@@ -52,7 +49,7 @@ Open **http://localhost:8080** when you see `Booting worker`.
 * The database has **no published port**, so only containers on `veloure-net` can reach it.
 * `depends_on: condition: service_healthy` makes the web container wait for Postgres' `pg_isready` check.
 
-### Commands to show in the video
+### Useful Docker commands
 
 ```bash
 docker compose ps                              # both containers, ports, health
@@ -80,7 +77,7 @@ SELECT kind, to_email, subject FROM email_outbox ORDER BY id;
 
 ---
 
-## 3. Pages and features (40-point section)
+## 3. Pages and features
 
 | Page | URL |
 |---|---|
