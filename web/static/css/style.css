@@ -419,3 +419,6 @@ th { font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; color:
 .filters { position: sticky; top: 6rem; align-self: start; }
 .filters form { position: static; }
 @media (max-width: 760px) { .filters { position: static; } }
+
+/* the header scrolls away with the page on every screen size (not pinned) */
+.site-header { position: static; }
