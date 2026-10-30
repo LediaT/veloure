@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Checkout{% endblock %}
+{% block content %}
+<section class="page-head"><div class="wrap"><h1>Checkout</h1>
+  <p class="lead">Every order is made fresh, just for you.</p></div></section>
+<div class="wrap">
+  <div class="cart-layout">
+    <form class="checkout-form" method="post" action="{{ url_for('checkout') }}" novalidate>
+      {% if errors %}
+      <div class="flash flash-error" role="alert"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>
+      {% endif %}
+
+      {% if not user %}
+      <div class="member-box">
+        <strong>Are you a Velouré Family member?</strong>
+        <a href="{{ url_for('login', next=url_for('checkout')) }}">Sign in</a> or
+        <a href="{{ url_for('register', next=url_for('checkout')) }}">join now</a> for 10% off your first order, coupons, and rewards points. You can also continue as a guest.
+      </div>
+      {% endif %}
+
+      <fieldset>
+        <legend>Your details</legend>
+        <label>Full name <input type="text" name="name" value="{{ form.get('name', user.name if user else '') }}" required></label>
+        <div class="two-col">
+          <label>Email <input type="email" name="email" value="{{ form.get('email', user.email if user else '') }}" required></label>
+          <label>Phone (optional) <input type="tel" name="phone" value="{{ form.get('phone', '') }}"></label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Choose your date and time</legend>
+        <p class="fieldset-note">Orders need at least 24 hours' notice so we can prepare them fresh. Planning a celebration? You can order up to 30 days ahead.
+          <br><strong>Earliest available: {{ first_date.strftime('%A, %B %d') }}, {{ first_slot }}.</strong></p>
+        <div class="choice-row">
+          <label class="choice"><input type="radio" name="fulfillment" value="pickup" {% if fulfillment == 'pickup' %}checked{% endif %}> <span><strong>Pickup</strong><small>Free. Pickup details are in your confirmation.</small></span></label>
+          <label class="choice"><input type="radio" name="fulfillment" value="delivery" {% if fulfillment == 'delivery' %}checked{% endif %}> <span><strong>Local delivery</strong><small>{{ delivery_fee|money }}, free on orders of {{ free_min|money }} or more. Bergen County only.</small></span></label>
+        </div>
+        <div class="two-col">
+          <label>Date <input type="date" name="requested_date" min="{{ min_date }}" max="{{ max_date }}" value="{{ form.get('requested_date', min_date) }}" required></label>
+          <label>Time slot
+            <select name="time_slot" required>
+              {% for s in time_slots %}<option {% if form.get('time_slot', first_slot) == s %}selected{% endif %}>{{ s }}</option>{% endfor %}
+            </select>
+          </label>
+        </div>
+        <div class="delivery-fields">
+          <label>Street address <input type="text" name="street" value="{{ form.get('street', '') }}"></label>
+          <div class="two-col">
+            <label>Town <input type="text" name="town" value="{{ form.get('town', '') }}"></label>
+            <label>ZIP code <input type="text" name="zip" inputmode="numeric" maxlength="5" value="{{ form.get('zip', '') }}"></label>
+          </div>
+        </div>
+        <label>Notes for our kitchen (optional) <textarea name="notes" rows="3" placeholder="A message for a gift card, a name for a birthday cake...">{{ form.get('notes', '') }}</textarea></label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Discounts</legend>
+        {% if user %}
+          {% if pricing.welcome %}<p class="perk-line">Your 10% Velouré Family welcome discount is applied to this first order.</p>{% endif %}
+          {% if pricing.birthday_gift %}<p class="perk-line">Happy birthday! A complimentary Truffle & Date Gift Box will be added to this order.</p>{% endif %}
+          <div class="coupon-row">
+            <label>Coupon code <input type="text" name="coupon" value="{{ form.get('coupon', '') }}" placeholder="e.g. AUTUMN15"></label>
+            <button class="btn-small btn-outline" type="submit" name="action" value="apply">Apply</button>
+          </div>
+          {% if pricing.coupon_error %}<p class="error-text">{{ pricing.coupon_error }}</p>{% endif %}
+          <p class="small muted">Only one percentage discount applies per order: your welcome discount or a coupon, whichever is bigger.</p>
+          {% if reward_blocks %}
+          <label class="check"><input type="checkbox" name="use_points" value="1" {% if form.get('use_points') %}checked{% endif %} onchange="this.form.querySelector('[value=apply]').click()"> Use my Velouré Points ({{ user.points }} points: up to {{ (reward_blocks * 5)|money }} off)</label>
+          {% else %}<p class="small muted">You have {{ user.points }} Velouré Points. At 100 points you get $5 off.</p>{% endif %}
+        {% else %}
+          <p class="small muted">Coupons, welcome discount, and rewards points are for Velouré Family members. <a href="{{ url_for('register', next=url_for('checkout')) }}">Join free</a>.</p>
+        {% endif %}
+      </fieldset>
+
+      <fieldset>
+        <legend>Payment method</legend>
+        <div class="pay-grid">
+          {% for m in payment_methods %}
+          <label class="pay"><input type="radio" name="payment_method" value="{{ m }}" {% if form.get('payment_method', 'Visa') == m %}checked{% endif %}> <span>{{ m }}</span></label>
+          {% endfor %}
+        </div>
+      </fieldset>
+
+      <button class="btn btn-block" type="submit" name="action" value="place">Place Order</button>
+    </form>
+
+    <aside class="summary">
+      <h2>Your Order</h2>
+      {% for item in items %}
+      <p class="sum-row small"><span>{{ item.qty }} × {{ item.product.name }}<br><em class="muted">{{ item.label }}</em></span><span>{{ item.line_total|money }}</span></p>
+      {% endfor %}
+      {% if pricing.birthday_gift %}<p class="sum-row small"><span>Birthday surprise gift box</span><span>Free</span></p>{% endif %}
+      <hr>
+      <p class="sum-row"><span>Subtotal</span><span>{{ pricing.subtotal|money }}</span></p>
+      {% if pricing.discount %}<p class="sum-row discount"><span>{{ pricing.discount_label }}</span><span>−{{ pricing.discount|money }}</span></p>{% endif %}
+      {% if pricing.points_value %}<p class="sum-row discount"><span>Velouré Points ({{ pricing.points_used }})</span><span>−{{ pricing.points_value|money }}</span></p>{% endif %}
+      <p class="sum-row small"><span>{{ 'Delivery' if fulfillment == 'delivery' else 'Pickup' }}</span><span>{% if pricing.fee %}{{ pricing.fee|money }}{% else %}Free{% endif %}</span></p>
+      <p class="sum-row total"><strong>Total</strong><strong>{{ pricing.total|money }}</strong></p>
+      {% if user %}<p class="small muted">You'll earn {{ pricing.points_earned }} Velouré Points with this order.</p>{% endif %}
+      <a class="clear-link" href="{{ url_for('cart') }}">Edit cart</a>
+    </aside>
+  </div>
+</div>
+{% endblock %}

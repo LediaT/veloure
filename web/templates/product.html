@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}{{ p.name }}{% endblock %}
+{% block content %}
+<div class="wrap">
+  <nav class="crumbs" aria-label="Breadcrumb">
+    <a href="{{ url_for('shop') }}">Shop</a> / <a href="{{ url_for('shop', category=p.category_slug) }}">{{ p.category_name }}</a> / <span>{{ p.name }}</span>
+  </nav>
+
+  <div class="product">
+    <div class="gallery">
+      <div class="product-img" data-initial="{{ p.name[0] }}">
+        {% if p.image_url %}<img src="{{ p.image_url }}" alt="{{ p.name }}" onerror="this.remove()">{% endif %}
+      </div>
+      {% if p.image2_url %}
+      <div class="product-img product-img-2" data-initial="{{ p.name[0] }}">
+        <img src="{{ p.image2_url }}" alt="{{ p.name }}, another view" loading="lazy" onerror="this.remove()">
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="product-info">
+      <p class="eyebrow">{{ p.category_name }}</p>
+      <h1>{{ p.name }}</h1>
+      <p class="artisanal-line">Artisanal · Made fresh to order</p>
+      <p class="product-desc">{{ p.description }}</p>
+      <p class="tagline">{{ p.tagline }}</p>
+
+      <ul class="badges">
+        <li>Vegan</li><li>Gluten-Free</li><li>No Refined Sugar</li>
+        {% if p.is_nut_free %}<li>Nut-Free</li>{% endif %}
+        {% if p.is_seasonal %}<li>Seasonal</li>{% endif %}
+        {% if p.contains_caffeine %}<li>Contains Caffeine</li>{% endif %}
+      </ul>
+
+      {% if p.stock == 0 %}
+        <p class="stock stock-out">Fully booked for now. Please check back soon.</p>
+      {% else %}
+      <form class="add-form" method="post" action="{{ url_for('cart_add') }}">
+        <fieldset class="sizes">
+          <legend>{% if variants|length > 1 %}Choose a size{% else %}Size{% endif %}</legend>
+          {% for v in variants %}
+          <label class="size">
+            <input type="radio" name="variant_id" value="{{ v.id }}" {% if loop.first %}checked{% endif %}>
+            <span><strong>{{ v.label }}</strong><em>{{ v.price|money }}</em></span>
+          </label>
+          {% endfor %}
+        </fieldset>
+        <div class="add-row">
+          <label class="sr-only" for="qty">Quantity</label>
+          <input id="qty" type="number" name="qty" value="1" min="1" max="{{ p.stock }}">
+          <button class="btn" type="submit">Add to Cart</button>
+        </div>
+        {% if p.stock <= 5 %}<p class="stock stock-low">Only {{ p.stock }} more orders can be taken for now</p>{% endif %}
+      </form>
+      {% endif %}
+
+      <div class="fresh-note">
+        <strong>Made fresh for you.</strong> Every order is prepared by hand especially for you. Please order at least 24 hours in advance, or plan ahead and choose any date and time that suits you.
+      </div>
+
+      <div class="allergens">
+        <strong>Allergens:</strong>
+        {% if p.allergens %}Contains {{ p.allergens|lower }}.{% else %}No major allergens in this recipe.{% endif %}
+        Our kitchen also works with tree nuts, peanuts, sesame, and coconut, so traces may be present.
+      </div>
+    </div>
+  </div>
+
+  {% if related %}
+  <section class="section">
+    <div class="section-head"><h2>You may also love</h2></div>
+    <div class="grid">{% for p in related %}{% include "_product_card.html" %}{% endfor %}</div>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

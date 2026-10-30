@@ -1,0 +1,25 @@
+{# Reusable product card. Expects "p" from PRODUCT_LIST_SQL (has from_price, variant_count, first_variant_id). #}
+<article class="card">
+  <a class="card-img" href="{{ url_for('product', slug=p.slug) }}" data-initial="{{ p.name[0] }}">
+    {% if p.image_url %}<img src="{{ p.image_url }}" alt="{{ p.name }}" loading="lazy" onerror="this.remove()">{% endif %}
+    {% if p.stock == 0 %}<span class="tag tag-dark">Fully booked</span>
+    {% elif p.is_best_seller %}<span class="tag">Best Seller</span>
+    {% elif p.is_seasonal %}<span class="tag">Seasonal</span>{% endif %}
+  </a>
+  <div class="card-body">
+    <h3><a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a></h3>
+    <p class="card-meta">{% if p.is_nut_free %}Nut-free{% else %}{{ p.category_name }}{% endif %}</p>
+    <div class="card-foot">
+      <span class="price">{% if p.variant_count > 1 %}<small>from</small> {% endif %}{{ p.from_price|money }}</span>
+      {% if p.stock == 0 %}<span class="muted small">Back soon</span>
+      {% elif p.variant_count > 1 %}<a class="btn-small" href="{{ url_for('product', slug=p.slug) }}">Choose</a>
+      {% else %}
+      <form method="post" action="{{ url_for('cart_add') }}">
+        <input type="hidden" name="variant_id" value="{{ p.first_variant_id }}">
+        <input type="hidden" name="qty" value="1">
+        <button class="btn-small" type="submit">Add</button>
+      </form>
+      {% endif %}
+    </div>
+  </div>
+</article>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Velouré Patisserie{% endblock %} | Sweet by nature.</title>
+  <meta name="description" content="Artisanal vegan desserts handmade in Bergen County, New Jersey. Gluten-free, with no refined sugar.">
+  <link rel="icon" href="{{ url_for('static', filename='img/icon.svg') }}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  <div class="promise-bar">
+    <span>100% Vegan <i>·</i> Gluten-Free <i>·</i> No Refined Sugar <i>·</i> Artisanal</span>
+  </div>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="{{ url_for('home') }}" aria-label="Velouré home">
+        <img src="{{ url_for('static', filename='img/icon.svg') }}" alt="" width="40" height="40">
+        <span class="brand-text">
+          <span class="brand-name">VELOURÉ</span>
+          <span class="brand-sub">PATISSERIE</span>
+        </span>
+      </a>
+      <nav class="main-nav" aria-label="Main">
+        <a href="{{ url_for('shop') }}">Shop</a>
+        <a href="{{ url_for('shop', category='gift-boxes') }}">Gift Boxes</a>
+        <a href="{{ url_for('about') }}">About Us</a>
+        {% if user %}<a href="{{ url_for('account') }}">My Account</a>{% else %}<a href="{{ url_for('login') }}">Sign In</a>{% endif %}
+        {% if is_admin %}<a href="{{ url_for('admin_dashboard') }}">Dashboard</a>{% endif %}
+      </nav>
+      <a class="cart-link" href="{{ url_for('cart') }}">Cart <span class="cart-count">{{ cart_count }}</span></a>
+    </div>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="wrap flashes">
+      {% for cat, msg in messages %}<div class="flash flash-{{ cat }}" role="status">{{ msg }}</div>{% endfor %}
+    </div>
+    {% endif %}
+  {% endwith %}
+
+  <main>{% block content %}{% endblock %}</main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div>
+        <img class="footer-logo" src="{{ url_for('static', filename='img/icon.svg') }}" alt="" width="48" height="48">
+        <p class="footer-tag"><em>Sweet by nature.</em><br>Artisanal desserts from Bergen County, New Jersey.</p>
+        <p class="small">Pickup and local delivery. Please order at least 24 hours in advance.</p>
+      </div>
+      <div>
+        <h4>Shop</h4>
+        {% for c in nav_categories %}<a href="{{ url_for('shop', category=c.slug) }}">{{ c.name }}</a>{% endfor %}
+      </div>
+      <div>
+        <h4>Help</h4>
+        <a href="{{ url_for('manage_order') }}">Manage my order</a>
+        <a href="{{ url_for('about') }}">About us</a>
+        {% if user %}<a href="{{ url_for('account') }}">My account</a>{% else %}<a href="{{ url_for('login') }}">Sign in</a>{% endif %}
+      </div>
+      <div>
+        <h4>Join the Velouré Family</h4>
+        <p>10% off your first order, members-only coupons, rewards points, and a surprise on your birthday.</p>
+        <form class="newsletter" method="get" action="{{ url_for('register') }}">
+          <input type="email" name="email" placeholder="Your email" required aria-label="Email address">
+          <button type="submit">Join</button>
+        </form>
+      </div>
+    </div>
+    <div class="wrap footer-pay">We accept Visa, Mastercard, American Express, Apple Pay, Google Pay, and PayPal.</div>
+    <div class="wrap footer-bottom">
+      <span>&copy; {{ current_year }} Velouré Patisserie. Bergen County, New Jersey.</span>
+      {% if is_admin %}<a href="{{ url_for('admin_logout') }}">Staff log out</a>{% else %}<a href="{{ url_for('admin_login') }}">Staff login</a>{% endif %}
+    </div>
+  </footer>
+</body>
+</html>

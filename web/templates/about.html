@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}About Us{% endblock %}
+{% block content %}
+<section class="about-hero">
+  <div class="wrap about-inner">
+    <img class="about-logo" src="{{ url_for('static', filename='img/logo.svg') }}" alt="Velouré Patisserie, Sweet by nature.">
+    <div>
+      <p class="eyebrow">About us</p>
+      <h1>Crafted by hand. Inspired by nature.</h1>
+      <p class="lead">Velouré is a celebration of everything dessert should be: silky, rich, and made with intention. In our Bergen County kitchen, each creation is shaped by hand in small batches, with natural ingredients chosen for their purity and flavor.</p>
+      <p>Vegan, gluten-free, and free of refined sugar, our desserts are made to be shared by everyone in the family, at every table and for every occasion.</p>
+      <p><em class="signature">Velouré. Sweet by nature.</em></p>
+    </div>
+  </div>
+</section>
+
+<section class="section section-cream">
+  <div class="wrap">
+    <div class="section-head"><p class="eyebrow">Our promise</p><h2>What you will always find at Velouré</h2></div>
+    <div class="values">
+      <div><h3>100% Vegan</h3><p>Every single creation is completely plant-based.</p></div>
+      <div><h3>Gluten-Free</h3><p>Made without gluten, so more people can share the table.</p></div>
+      <div><h3>No Refined Sugar</h3><p>Sweetness that comes from nature, never from refined white sugar.</p></div>
+      <div><h3>Artisanal</h3><p>Small batches, made by hand, with care in every detail.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap narrow center">
+    <h2>Order ahead, or visit our shop</h2>
+    <p>Online orders are made fresh for you and need at least 24 hours' notice. Need something today? Stop by our shop for a fresh selection by the piece.</p>
+    <a class="btn" href="{{ url_for('shop') }}">Shop the Collection</a>
+  </div>
+</section>
+{% endblock %}

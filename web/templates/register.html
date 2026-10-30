@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Join the Velouré Family{% endblock %}
+{% block content %}
+<div class="wrap join-layout">
+  <div class="join-intro">
+    <p class="eyebrow">The Velouré Family</p>
+    <h1>Join the Velouré Family.</h1>
+    <p class="lead">Create your account and enjoy sweet benefits all year long.</p>
+    <ul class="perks">
+      <li><strong>10% off</strong> your first order</li>
+      <li>Members-only <strong>coupons</strong> and seasonal offers</li>
+      <li><strong>Velouré Points</strong> on every order: 100 points = $5 off</li>
+      <li>A <strong>surprise gift box</strong> in your birthday month</li>
+      <li>Be the first to hear about <strong>new flavors</strong></li>
+    </ul>
+  </div>
+  <form class="join-form" method="post">
+    {% if errors %}<div class="flash flash-error" role="alert"><ul>{% for e in errors %}<li>{{ e }}</li>{% endfor %}</ul></div>{% endif %}
+    <label>Full name <input type="text" name="name" value="{{ form.get('name', '') }}" required autocomplete="name"></label>
+    <label>Email <input type="email" name="email" value="{{ form.get('email', '') }}" required autocomplete="email"></label>
+    <label>Password (at least 8 characters) <input type="password" name="password" minlength="8" required autocomplete="new-password"></label>
+    <p class="field-label">Birthday <span class="muted small">(month and day, for your birthday surprise)</span></p>
+    <div class="two-col">
+      <select name="birth_month" aria-label="Birth month" required>
+        <option value="">Month</option>
+        {% for m in months %}<option value="{{ loop.index }}" {% if form.get('birth_month')|string == loop.index|string %}selected{% endif %}>{{ m }}</option>{% endfor %}
+      </select>
+      <select name="birth_day" aria-label="Birth day" required>
+        <option value="">Day</option>
+        {% for d in range(1, 32) %}<option value="{{ d }}" {% if form.get('birth_day')|string == d|string %}selected{% endif %}>{{ d }}</option>{% endfor %}
+      </select>
+    </div>
+    <button class="btn btn-block" type="submit">Create my account</button>
+    <p class="small center">Already a member? <a href="{{ url_for('login', next=request.args.get('next', '')) }}">Sign in</a></p>
+  </form>
+</div>
+{% endblock %}

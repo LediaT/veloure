@@ -1,0 +1,6 @@
+# Files Git should ignore
+_to_delete/
+__pycache__/
+*.pyc
+.DS_Store
+.vscode/

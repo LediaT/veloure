@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Your Cart{% endblock %}
+{% block content %}
+<section class="page-head"><div class="wrap"><h1>Your Cart</h1></div></section>
+<div class="wrap">
+  {% if items %}
+  <div class="cart-layout">
+    <div class="cart-items">
+      {% for item in items %}{% set p = item.product %}
+      <div class="cart-row">
+        <a class="thumb" href="{{ url_for('product', slug=p.slug) }}" data-initial="{{ p.name[0] }}">
+          {% if p.image_url %}<img src="{{ p.image_url }}" alt="" onerror="this.remove()">{% endif %}
+        </a>
+        <div class="cart-name">
+          <a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a>
+          <span class="muted small">{{ item.label }} · {{ item.price|money }} each</span>
+        </div>
+        <form class="qty-form" method="post" action="{{ url_for('cart_update') }}">
+          <input type="hidden" name="variant_id" value="{{ item.variant_id }}">
+          <label class="sr-only" for="qty-{{ item.variant_id }}">Quantity</label>
+          <input id="qty-{{ item.variant_id }}" type="number" name="qty" value="{{ item.qty }}" min="0" max="{{ p.stock }}">
+          <button class="btn-small btn-outline" type="submit">Update</button>
+        </form>
+        <span class="line-total">{{ item.line_total|money }}</span>
+        <form method="post" action="{{ url_for('cart_remove') }}">
+          <input type="hidden" name="variant_id" value="{{ item.variant_id }}">
+          <button class="remove" type="submit" aria-label="Remove {{ p.name }}">Remove</button>
+        </form>
+      </div>
+      {% endfor %}
+      <div class="why-24">
+        <strong>Why 24 hours?</strong> We don't keep desserts sitting on a shelf. Your order is made from scratch, just for you, so it arrives at its freshest. Need something today? Stop by our shop for a fresh selection by the piece.
+      </div>
+    </div>
+
+    <aside class="summary">
+      <h2>Order Summary</h2>
+      <p class="sum-row"><span>Subtotal</span><span>{{ subtotal|money }}</span></p>
+      <p class="sum-row muted small"><span>Pickup</span><span>Free</span></p>
+      <p class="sum-row muted small"><span>Local delivery</span><span>{{ delivery_fee|money }}</span></p>
+      {% if needed_for_free > 0 %}
+        <p class="free-note">Add {{ needed_for_free|money }} more for free delivery.</p>
+      {% else %}
+        <p class="free-note">You qualify for free delivery.</p>
+      {% endif %}
+      {% if not user %}<p class="small member-hint"><a href="{{ url_for('register', next=url_for('checkout')) }}">Join the Velouré Family</a> for 10% off your first order.</p>{% endif %}
+      <a class="btn btn-block" href="{{ url_for('checkout') }}">Continue to Checkout</a>
+      <a class="clear-link" href="{{ url_for('shop') }}">Keep shopping</a>
+    </aside>
+  </div>
+  {% else %}
+  <div class="empty">
+    <h3>Your cart is empty</h3>
+    <p>Something sweet is waiting for you.</p>
+    <a class="btn" href="{{ url_for('shop') }}">Shop the Collection</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Not found{% endblock %}
+{% block content %}
+<div class="wrap empty">
+  <h1>We could not find that page</h1>
+  <p>It may have been moved, or it sold out before we could bake more.</p>
+  <a class="btn" href="{{ url_for('shop') }}">Back to the shop</a>
+</div>
+{% endblock %}

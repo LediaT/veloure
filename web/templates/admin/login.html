@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Staff Login{% endblock %}
+{% block content %}
+<div class="wrap login-box">
+  <img src="{{ url_for('static', filename='img/icon.svg') }}" alt="" width="56" height="56">
+  <h1>Kitchen Dashboard</h1>
+  <p class="muted">Staff only. Manage orders and daily stock.</p>
+  <form method="post">
+    <label>Password <input type="password" name="password" required autofocus></label>
+    <button class="btn btn-block" type="submit">Log in</button>
+  </form>
+</div>
+{% endblock %}

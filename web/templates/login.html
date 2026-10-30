@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Sign In{% endblock %}
+{% block content %}
+<div class="wrap login-box">
+  <img src="{{ url_for('static', filename='img/icon.svg') }}" alt="" width="56" height="56">
+  <h1>Welcome back</h1>
+  <p class="muted">Sign in to your Velouré Family account.</p>
+  <form method="post">
+    <label>Email <input type="email" name="email" required autofocus autocomplete="email"></label>
+    <label>Password <input type="password" name="password" required autocomplete="current-password"></label>
+    <button class="btn btn-block" type="submit">Sign in</button>
+  </form>
+  <p class="small">New here? <a href="{{ url_for('register', next=request.args.get('next', '')) }}">Join the Velouré Family</a></p>
+</div>
+{% endblock %}

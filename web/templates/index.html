@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% block title %}Artisanal Vegan Desserts{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="wrap hero-inner">
+    <div class="hero-text">
+      <p class="eyebrow">Velouré Patisserie</p>
+      <h1>Indulgence, without compromise.</h1>
+      <p class="lead">Artisanal vegan desserts handmade in Bergen County, New Jersey. Gluten-free, with no refined sugar, and sweet by nature.</p>
+      <div class="hero-actions">
+        <a class="btn" href="{{ url_for('shop') }}">Shop the Collection</a>
+        <a class="btn btn-ghost" href="{{ url_for('shop', category='gift-boxes') }}">Explore Gift Boxes</a>
+      </div>
+      <p class="hero-note">Made fresh for every order. Please order at least 24 hours in advance.</p>
+    </div>
+    <div class="hero-visual" data-initial="V">
+      <img src="{{ url_for('static', filename='img/products/hero.jpg') }}" alt="A table of Velouré desserts: a walnut chocolate cake, coconut truffles, pistachio chocolate and heart cookies" onerror="this.remove()">
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Most loved</p>
+      <h2>Our Best Sellers</h2>
+    </div>
+    <div class="grid">
+      {% for p in best_sellers %}{% include "_product_card.html" %}{% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-cream">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">Why Velouré</p>
+      <h2>Dessert, the way nature intended</h2>
+    </div>
+    <div class="values">
+      <div><h3>Pure by design</h3><p>Natural ingredients only. No preservatives, no artificial colors, and nothing you can't pronounce.</p></div>
+      <div><h3>Made for every table</h3><p>Vegan, gluten-free, and free of refined sugar, so everyone in the family can share the same slice.</p></div>
+      <div><h3>Artisanal, always</h3><p>Made from scratch in our kitchen, in small batches. Even our nut butters, jams, and fruit pastes are homemade.</p></div>
+      <div><h3>Made fresh for you</h3><p>Every online order is prepared especially for you. Order at least 24 hours ahead, or plan up to 30 days in advance.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <p class="eyebrow">The collection</p>
+      <h2>Shop by Category</h2>
+    </div>
+    <div class="cat-grid">
+      {% for c in categories %}
+      <a class="cat-tile" href="{{ url_for('shop', category=c.slug) }}" data-initial="{{ c.name[0] }}">
+        {% if c.image_url %}<img src="{{ c.image_url }}" alt="" loading="lazy" onerror="this.remove()">{% endif %}
+        <span class="cat-label">{{ c.name }}<small>{{ c.product_count }} {{ 'item' if c.product_count == 1 else 'items' }}</small></span>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-cream">
+  <div class="wrap split">
+    <div>
+      <p class="eyebrow">Visit us</p>
+      <h2>Fresh in our shop, every day.</h2>
+      <p class="lead">Can't wait 24 hours? Visit our Bergen County shop. Every morning we prepare a rotating selection of our most-loved desserts, available by the slice or by the piece while they last.</p>
+    </div>
+    <div class="family-card">
+      <p class="eyebrow">The Velouré Family</p>
+      <h3>Join us and enjoy</h3>
+      <ul class="perks">
+        <li>10% off your first order</li>
+        <li>Members-only coupons and seasonal offers</li>
+        <li>Velouré Points on every order: 100 points = $5 off</li>
+        <li>A surprise gift box on your birthday</li>
+        <li>First to hear about new flavors</li>
+      </ul>
+      {% if user %}<a class="btn" href="{{ url_for('account') }}">My Account</a>
+      {% else %}<a class="btn" href="{{ url_for('register') }}">Join the Velouré Family</a>{% endif %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-dark">
+  <div class="wrap name-story">
+    <img src="{{ url_for('static', filename='img/icon.svg') }}" alt="" width="64" height="64">
+    <p class="quote"><em>Sweet by nature.</em></p>
+    <p>Handmade in small batches in Bergen County, New Jersey.</p>
+    <a class="link-gold" href="{{ url_for('shop') }}">Shop the Collection</a>
+  </div>
+</section>
+{% endblock %}

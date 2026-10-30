@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}Order {{ order.order_number }}{% endblock %}
+{% block content %}
+<div class="wrap confirm">
+  <img src="{{ url_for('static', filename='img/icon.svg') }}" alt="" width="72" height="72">
+  {% if order.status == 'cancelled' %}
+    <h1>Order cancelled</h1>
+    <p class="lead">This order was cancelled{% if order.cancelled_at %} on {{ order.cancelled_at|nj }}{% endif %}. No charge was made.</p>
+  {% else %}
+    <h1>Thank you, {{ order.customer_name.split(' ')[0] }}!</h1>
+    <p class="lead">Your order is reserved and will be freshly prepared for you.</p>
+  {% endif %}
+  <p class="order-number">Order {{ order.order_number }}</p>
+
+  <div class="confirm-card">
+    <p><strong>{{ 'Pickup' if order.fulfillment == 'pickup' else 'Delivery' }}</strong> on {{ order.requested_date.strftime('%A, %B %d') }}, {{ order.time_slot }}</p>
+    {% if order.fulfillment == 'delivery' %}<p class="muted">{{ order.street }}, {{ order.town }}, NJ {{ order.zip }}</p>{% endif %}
+    <p class="muted small">Status: {{ order.status|capitalize }} · Placed {{ order.created_at|nj }}</p>
+    <hr>
+    {% for i in items %}
+    <p class="sum-row small"><span>{{ i.quantity }} × {{ i.product_name }}<br><em class="muted">{{ i.variant_label }}</em></span><span>{% if i.is_gift %}Free{% else %}{{ (i.unit_price * i.quantity)|money }}{% endif %}</span></p>
+    {% endfor %}
+    <hr>
+    <p class="sum-row small"><span>Subtotal</span><span>{{ order.subtotal|money }}</span></p>
+    {% if order.discount %}<p class="sum-row small discount"><span>{{ order.discount_label }}</span><span>−{{ order.discount|money }}</span></p>{% endif %}
+    {% if order.points_value %}<p class="sum-row small discount"><span>Velouré Points ({{ order.points_used }})</span><span>−{{ order.points_value|money }}</span></p>{% endif %}
+    <p class="sum-row small"><span>{{ 'Delivery' if order.fulfillment == 'delivery' else 'Pickup' }}</span><span>{{ 'Free' if order.delivery_fee == 0 else order.delivery_fee|money }}</span></p>
+    <p class="sum-row total"><strong>Total</strong><strong>{{ order.total|money }}</strong></p>
+    <p class="muted small">Payment: {{ order.payment_method }}</p>
+    {% if order.points_earned and order.status != 'cancelled' %}<p class="muted small">You earned {{ order.points_earned }} Velouré Points.</p>{% endif %}
+  </div>
+
+  {% if can_cancel %}
+  <div class="cancel-box">
+    <p><strong>Changed your mind?</strong> You can cancel this order until <strong>{{ deadline|nj }}</strong>.</p>
+    <form method="post" action="{{ url_for('cancel', order_number=order.order_number) }}">
+      <button class="btn btn-ghost" type="submit">Cancel Order</button>
+    </form>
+  </div>
+  {% elif order.status != 'cancelled' %}
+  <p class="muted small">This order can no longer be cancelled because preparation has begun.</p>
+  {% endif %}
+
+  <a class="btn" href="{{ url_for('shop') }}">Continue Shopping</a>
+</div>
+{% endblock %}

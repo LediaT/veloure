@@ -1,0 +1,56 @@
+# =============================================================
+# Velouré Patisserie - two containers on one private network
+#
+#   Browser --(localhost:8080)--> web (Flask, port 5000)
+#                                   |
+#                         (db:5432, private network)
+#                                   v
+#                                 db (PostgreSQL 16)
+#
+# Start everything:   docker compose up --build
+# Stop everything:    docker compose down
+# Reset the database: docker compose down -v
+# =============================================================
+services:
+
+  db:
+    image: postgres:16-alpine
+    container_name: veloure-db
+    environment:
+      POSTGRES_DB: veloure
+      POSTGRES_USER: veloure
+      POSTGRES_PASSWORD: veloure_pass
+    volumes:
+      - veloure-data:/var/lib/postgresql/data           # keeps data when containers restart
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql:ro   # creates tables + products on first start
+    healthcheck:                                         # "healthy" once Postgres accepts connections
+      test: ["CMD-SHELL", "pg_isready -U veloure -d veloure"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - veloure-net
+    # No "ports:" on purpose. The database is NOT exposed to the internet or your Mac;
+    # only containers on veloure-net (the web app) can reach it.
+
+  web:
+    build: ./web
+    container_name: veloure-web
+    ports:
+      - "8080:5000"          # your Mac's port 8080 -> container port 5000
+    environment:
+      DATABASE_URL: postgresql://veloure:veloure_pass@db:5432/veloure   # "db" = the service name above
+      SECRET_KEY: change-me-veloure-session-key
+      ADMIN_PASSWORD: veloure-admin
+    depends_on:
+      db:
+        condition: service_healthy    # wait for the database before starting the web app
+    networks:
+      - veloure-net
+
+networks:
+  veloure-net:
+    driver: bridge
+
+volumes:
+  veloure-data:

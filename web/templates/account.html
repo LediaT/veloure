@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}My Account{% endblock %}
+{% block content %}
+<section class="page-head"><div class="wrap">
+  <p class="eyebrow">The Velouré Family</p>
+  <h1>Hello, {{ user.name.split(' ')[0] }}</h1>
+  <p class="lead">Member since {{ user.created_at|nj('%B %Y') }}. <a href="{{ url_for('logout') }}">Sign out</a></p>
+</div></section>
+
+<div class="wrap account">
+  <div class="stats">
+    <div class="stat"><span>Velouré Points</span><strong>{{ user.points }}</strong><small>{% if rewards %}{{ rewards }} × $5 reward ready{% else %}{{ to_next }} more to your next $5{% endif %}</small></div>
+    <div class="stat"><span>Welcome offer</span><strong>{% if first_order %}10% off{% else %}Used{% endif %}</strong><small>{% if first_order %}Applied automatically to your first order{% else %}Thank you for ordering!{% endif %}</small></div>
+    <div class="stat"><span>Birthday</span><strong>{{ birth_month_name }} {{ user.birth_day }}</strong><small>{% if birthday_due %}Your surprise gift box will be added to your next order this month{% else %}A surprise gift box awaits in your birthday month{% endif %}</small></div>
+  </div>
+
+  {% if birthday_due %}<div class="birthday-banner">Happy birthday month, {{ user.name.split(' ')[0] }}! A complimentary Truffle & Date Gift Box will be added to your next order.</div>{% endif %}
+
+  <h2>Your coupons</h2>
+  {% if coupons %}
+  <div class="coupon-list">
+    {% for c in coupons %}
+    <div class="coupon"><strong>{{ c.code }}</strong><span>{{ c.percent_off }}% off</span><small>{{ c.description }}{% if c.ends_on %} · until {{ c.ends_on.strftime('%b %d') }}{% endif %}</small></div>
+    {% endfor %}
+  </div>
+  {% else %}<p class="muted">No coupons right now. We'll email you when a new one arrives.</p>{% endif %}
+
+  <h2>Your orders</h2>
+  {% if orders %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Order</th><th>For</th><th>Items</th><th>Total</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+      <tr>
+        <td><a href="{{ url_for('confirmation', order_number=o.order_number) }}">{{ o.order_number }}</a><br><span class="muted small">{{ o.created_at|nj('%b %d, %Y') }}</span></td>
+        <td>{{ o.fulfillment|capitalize }}, {{ o.requested_date.strftime('%b %d') }}</td>
+        <td>{{ o.item_count }}</td>
+        <td>{{ o.total|money }}</td>
+        <td>{{ o.status|capitalize }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}
+  <p class="muted">No orders yet. <a href="{{ url_for('shop') }}">Find something sweet</a> and enjoy 10% off.</p>
+  {% endif %}
+</div>
+{% endblock %}

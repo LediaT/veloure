@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Kitchen Dashboard{% endblock %}
+{% block content %}
+<section class="page-head"><div class="wrap"><p class="eyebrow">Staff</p><h1>Kitchen Dashboard</h1>
+  <p class="admin-nav"><a href="#orders">Orders</a> · <a href="#inventory">Inventory</a> · <a href="#coupons">Coupons</a> · <a href="#outbox">Email outbox</a></p></div></section>
+<div class="wrap admin">
+  <div class="stats stats-5">
+    <div class="stat"><span>Orders</span><strong>{{ stats.orders }}</strong></div>
+    <div class="stat"><span>Revenue</span><strong>{{ stats.revenue|money }}</strong></div>
+    <div class="stat"><span>Open orders</span><strong>{{ stats.open_orders }}</strong></div>
+    <div class="stat"><span>Members</span><strong>{{ members }}</strong></div>
+    <div class="stat"><span>Low stock</span><strong>{{ low_stock }}</strong></div>
+  </div>
+
+  {% if top %}
+  <h2>Top sellers</h2>
+  <ol class="top-list">{% for t in top %}<li>{{ t.product_name }} <span class="muted">({{ t.sold }} sold)</span></li>{% endfor %}</ol>
+  {% endif %}
+
+  <h2 id="orders">Recent orders</h2>
+  {% if orders %}
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Order</th><th>Customer</th><th>For</th><th>Items</th><th>Total</th><th>Payment</th><th>Status</th></tr></thead>
+    <tbody>
+    {% for o in orders %}
+      <tr class="{{ 'row-cancelled' if o.status == 'cancelled' else '' }}">
+        <td><a href="{{ url_for('confirmation', order_number=o.order_number) }}">{{ o.order_number }}</a><br><span class="muted small">{{ o.created_at|nj('%b %d, %-I:%M %p') }}</span></td>
+        <td>{{ o.customer_name }}{% if o.user_id %} <span class="pill">Member</span>{% endif %}<br><span class="muted small">{{ o.email }}</span></td>
+        <td>{{ o.fulfillment|capitalize }}<br><span class="muted small">{{ o.requested_date.strftime('%b %d') }}, {{ o.time_slot }}</span></td>
+        <td>{{ o.item_count }}</td>
+        <td>{{ o.total|money }}{% if o.discount %}<br><span class="muted small">−{{ o.discount|money }} discount</span>{% endif %}</td>
+        <td>{{ o.payment_method }}</td>
+        <td>
+          {% if o.status == 'cancelled' %}<span class="pill pill-dark">Cancelled</span>
+          {% else %}
+          <form class="inline" method="post" action="{{ url_for('admin_update_status', order_id=o.id) }}">
+            <select name="status" onchange="this.form.submit()" aria-label="Status for {{ o.order_number }}">
+              {% for s in statuses %}<option value="{{ s }}" {% if s == o.status %}selected{% endif %}>{{ s|capitalize }}</option>{% endfor %}
+            </select>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+  {% else %}<p class="muted">No orders yet. Place one from the shop to see it here.</p>{% endif %}
+
+  <h2 id="inventory">Inventory</h2>
+  <p class="muted small">How many more orders each product can take. Lowest first.</p>
+  <div class="table-wrap">
+  <table>
+    <thead><tr><th>Product</th><th>Category</th><th>From</th><th>Available</th></tr></thead>
+    <tbody>
+    {% for p in products %}
+      <tr class="{{ 'row-out' if p.stock == 0 else ('row-low' if p.stock <= 3 else '') }}">
+        <td><a href="{{ url_for('product', slug=p.slug) }}">{{ p.name }}</a></td>
+        <td>{{ p.category_name }}</td>
+        <td>{{ p.from_price|money }}</td>
+        <td>
+          <form class="inline" method="post" action="{{ url_for('admin_update_stock', product_id=p.id) }}">
+            <input type="number" name="stock" value="{{ p.stock }}" min="0" aria-label="Stock for {{ p.name }}">
+            <button class="btn-small" type="submit">Save</button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  <h2 id="coupons">Member coupons</h2>
+  <div class="admin-two">
+    <form class="admin-form" method="post" action="{{ url_for('admin_create_coupon') }}">
+      <h3>Create a coupon</h3>
+      <div class="two-col">
+        <label>Code <input type="text" name="code" placeholder="WINTER20" required></label>
+        <label>% off <input type="number" name="percent_off" min="1" max="50" value="10" required></label>
+      </div>
+      <label>Description <input type="text" name="description" placeholder="Winter treats: 20% off"></label>
+      <label>Ends on (optional) <input type="date" name="ends_on"></label>
+      <button class="btn btn-block" type="submit">Create and email members</button>
+    </form>
+    <div>
+      {% for c in coupons %}
+      <div class="coupon {{ '' if c.is_active else 'coupon-off' }}">
+        <strong>{{ c.code }}</strong><span>{{ c.percent_off }}% off</span>
+        <small>{{ c.description }}{% if c.ends_on %} · until {{ c.ends_on.strftime('%b %d') }}{% endif %}</small>
+        <form method="post" action="{{ url_for('admin_toggle_coupon', coupon_id=c.id) }}"><button class="btn-small btn-outline" type="submit">{{ 'Turn off' if c.is_active else 'Turn on' }}</button></form>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <h2 id="outbox">Email outbox <span class="muted small">(simulated, not really sent)</span></h2>
+  <form class="admin-form inline-form" method="post" action="{{ url_for('admin_announce') }}">
+    <label>Announce a new flavor to all members
+      <select name="product_id">{% for p in products|sort(attribute='name') %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select>
+    </label>
+    <button class="btn-small" type="submit">Send announcement</button>
+  </form>
+  {% if outbox %}
+  <div class="outbox">
+    {% for e in outbox %}
+    <details class="email">
+      <summary><span class="pill">{{ e.kind }}</span> <strong>{{ e.subject }}</strong> <span class="muted small">to {{ e.to_email }} · {{ e.created_at|nj('%b %d, %-I:%M %p') }}</span></summary>
+      <pre>{{ e.body }}</pre>
+    </details>
+    {% endfor %}
+  </div>
+  {% else %}<p class="muted">No emails yet. Join as a member or place an order to see them here.</p>{% endif %}
+</div>
+{% endblock %}

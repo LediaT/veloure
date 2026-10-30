@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ current_category.name if current_category else 'Shop' }}{% endblock %}
+{% block content %}
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">The collection</p>
+    <h1>{{ current_category.name if current_category else 'Shop All Desserts' }}</h1>
+    <p class="lead">{{ current_category.blurb if current_category else 'Everything is vegan, gluten-free, and made without refined sugar.' }}</p>
+  </div>
+</section>
+
+<div class="wrap shop-layout">
+  <aside class="filters">
+    <form method="get" action="{{ url_for('shop') }}">
+      <label class="filter-title" for="q">Search</label>
+      <input id="q" type="search" name="q" value="{{ q }}" placeholder="Pistachio, cheesecake, dates...">
+
+      <label class="filter-title" for="category">Category</label>
+      <select id="category" name="category" onchange="this.form.submit()">
+        <option value="">All categories</option>
+        {% for c in nav_categories %}<option value="{{ c.slug }}" {% if c.slug == category %}selected{% endif %}>{{ c.name }}</option>{% endfor %}
+      </select>
+
+      <p class="filter-title">Preferences</p>
+      {% for key, label in [('nut_free','Nut-Free'), ('caffeine_free','Caffeine-Free'), ('seasonal','Seasonal'), ('best_seller','Best Sellers')] %}
+      <label class="check"><input type="checkbox" name="{{ key }}" value="1" {% if key in active %}checked{% endif %} onchange="this.form.submit()"> {{ label }}</label>
+      {% endfor %}
+
+      <label class="filter-title" for="sort">Sort by</label>
+      <select id="sort" name="sort" onchange="this.form.submit()">
+        {% for key, label in [('featured','Featured'), ('price_asc','Price: low to high'), ('price_desc','Price: high to low'), ('name','Name A-Z')] %}
+        <option value="{{ key }}" {% if key == sort %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+
+      <button class="btn btn-block" type="submit">Apply</button>
+      {% if q or category or active %}<a class="clear-link" href="{{ url_for('shop') }}">Clear all filters</a>{% endif %}
+    </form>
+    <p class="allergen-note">Every product is vegan and gluten-free. Each product page lists its allergens.</p>
+  </aside>
+
+  <section>
+    <p class="result-count">{{ products|length }} {{ 'dessert' if products|length == 1 else 'desserts' }}{% if q %} matching "{{ q }}"{% endif %}</p>
+    {% if products %}
+    <div class="grid grid-3">
+      {% for p in products %}{% include "_product_card.html" %}{% endfor %}
+    </div>
+    {% else %}
+    <div class="empty">
+      <h3>Nothing matches just yet</h3>
+      <p>Try a different search or remove a filter.</p>
+      <a class="btn" href="{{ url_for('shop') }}">See everything</a>
+    </div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}
