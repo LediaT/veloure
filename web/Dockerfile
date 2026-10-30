@@ -1,20 +1,18 @@
 # ---- Velouré web container ----
-# Start from a small official Python image
+# Built from the project root (see docker-compose.yml / render.yaml)
 FROM python:3.12-slim
 
-# All app files live in /app inside the container
 WORKDIR /app
 
-# Install the Python libraries first (Docker caches this step,
-# so rebuilds are fast when only the code changes)
-COPY requirements.txt .
+# Install the Python libraries first (cached between builds)
+COPY web/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the application code, templates and static files
-COPY . .
+# Application code, templates, static files, and the menu (used to fill an empty hosted database)
+COPY web/ .
+COPY db/init.sql ./init.sql
 
-# The app listens on port 5000 inside the container
 EXPOSE 5000
 
-# Run Flask with Gunicorn, a production web server (2 worker processes)
-CMD ["gunicorn", "--workers", "2", "--bind", "0.0.0.0:5000", "app:app"]
+# Gunicorn production server. Locally it uses port 5000; hosts like Render pass their own $PORT.
+CMD ["sh", "-c", "gunicorn --workers 2 --bind 0.0.0.0:${PORT:-5000} app:app"]

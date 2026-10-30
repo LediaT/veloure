@@ -34,7 +34,9 @@ services:
     # only containers on veloure-net (the web app) can reach it.
 
   web:
-    build: ./web
+    build:
+      context: .
+      dockerfile: web/Dockerfile
     container_name: veloure-web
     ports:
       - "8080:5000"          # your Mac's port 8080 -> container port 5000

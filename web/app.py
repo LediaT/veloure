@@ -52,6 +52,33 @@ def now_nj():
     return datetime.now(SHOP_TZ)
 
 
+def init_database_if_empty():
+    """On a fresh hosted database (e.g. Render) the tables don't exist yet, so load
+    init.sql once. Locally, Docker's Postgres already ran init.sql, so this does nothing.
+    An advisory lock stops two Gunicorn workers from loading it at the same time."""
+    sql_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "init.sql")
+    if not os.path.exists(sql_file):
+        return
+    try:
+        conn = psycopg2.connect(DATABASE_URL)
+    except psycopg2.Error:
+        return
+    try:
+        with conn.cursor() as cur:
+            cur.execute("SELECT pg_advisory_lock(424242)")
+            cur.execute("SELECT to_regclass('public.categories')")
+            if cur.fetchone()[0] is None:
+                with open(sql_file, encoding="utf-8") as f:
+                    cur.execute(f.read())
+            conn.commit()
+            cur.execute("SELECT pg_advisory_unlock(424242)")
+    finally:
+        conn.close()
+
+
+init_database_if_empty()
+
+
 # ------------------------------------------------------------------
 # Database helpers
 # ------------------------------------------------------------------
